@@ -1,59 +1,60 @@
 module.exports = {
-	//---------------------------------------------------------------------
-	// Action Name
-	//
-	// This is the name of the action displayed in the editor.
-	//---------------------------------------------------------------------
 
-	name: "Edit Role",
+//---------------------------------------------------------------------
+// Action Name
+//
+// This is the name of the action displayed in the editor.
+//---------------------------------------------------------------------
 
-	//---------------------------------------------------------------------
-	// Action Section
-	//
-	// This is the section the action will fall into.
-	//---------------------------------------------------------------------
+name: "Edit Role",
 
-	section: "Role Control",
+//---------------------------------------------------------------------
+// Action Section
+//
+// This is the section the action will fall into.
+//---------------------------------------------------------------------
 
-	//---------------------------------------------------------------------
-	// Action Subtitle
-	//
-	// This function generates the subtitle displayed next to the name.
-	//---------------------------------------------------------------------
+section: "Role Control",
 
-	subtitle: function(data) {
-		const roles = ["Mentioned Role", "1st Author Role", "1st Server Role", "Temp Variable", "Server Variable", "Global Variable"];
-		return `${roles[parseInt(data.storage)]}`;
-	},
+//---------------------------------------------------------------------
+// Action Subtitle
+//
+// This function generates the subtitle displayed next to the name.
+//---------------------------------------------------------------------
 
-	//---------------------------------------------------------------------
-	// Action Fields
-	//
-	// These are the fields for the action. These fields are customized
-	// by creating elements with corresponding IDs in the HTML. These
-	// are also the names of the fields stored in the action's JSON data.
-	//---------------------------------------------------------------------
+subtitle: function(data) {
+	const roles = ['Mentioned Role', '1st Author Role', '1st Server Role', 'Temp Variable', 'Server Variable', 'Global Variable'];
+	return `${roles[parseInt(data.storage)]}`;
+},
 
-	fields: ["roleName", "hoist", "mentionable", "color", "position", "storage", "varName", "reason"],
+//---------------------------------------------------------------------
+// Action Fields
+//
+// These are the fields for the action. These fields are customized
+// by creating elements with corresponding IDs in the HTML. These
+// are also the names of the fields stored in the action's JSON data.
+//---------------------------------------------------------------------
 
-	//---------------------------------------------------------------------
-	// Command HTML
-	//
-	// This function returns a string containing the HTML used for
-	// editting actions.
-	//
-	// The "isEvent" parameter will be true if this action is being used
-	// for an event. Due to their nature, events lack certain information,
-	// so edit the HTML to reflect this.
-	//
-	// The "data" parameter stores constants for select elements to use.
-	// Each is an array: index 0 for commands, index 1 for events.
-	// The names are: sendTargets, members, roles, channels,
-	//                messages, servers, variables
-	//---------------------------------------------------------------------
+fields: ["roleName", "hoist", "mentionable", "color", "position", "storage", "varName"],
 
-	html: function(isEvent, data) {
-		return `
+//---------------------------------------------------------------------
+// Command HTML
+//
+// This function returns a string containing the HTML used for
+// editting actions. 
+//
+// The "isEvent" parameter will be true if this action is being used
+// for an event. Due to their nature, events lack certain information, 
+// so edit the HTML to reflect this.
+//
+// The "data" parameter stores constants for select elements to use. 
+// Each is an array: index 0 for commands, index 1 for events.
+// The names are: sendTargets, members, roles, channels, 
+//                messages, servers, variables
+//---------------------------------------------------------------------
+
+html: function(isEvent, data) {
+	return `
 <div>
 	<div style="float: left; width: 35%;">
 		Source Role:<br>
@@ -89,76 +90,76 @@ module.exports = {
 	<input id="color" class="round" type="text" placeholder="Leave blank to not edit!"><br>
 	Position:<br>
 	<input id="position" class="round" type="text" placeholder="Leave blank to not edit!" style="width: 90%;"><br>
-</div><br><br><br>
-<div>
-  Reason:
-  <input id="reason" placeholder="Optional" class="round" type="text">
-</div>`;
-	},
+</div>`
+},
 
-	//---------------------------------------------------------------------
-	// Action Editor Init Code
-	//
-	// When the HTML is first applied to the action editor, this code
-	// is also run. This helps add modifications or setup reactionary
-	// functions for the DOM elements.
-	//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+// Action Editor Init Code
+//
+// When the HTML is first applied to the action editor, this code
+// is also run. This helps add modifications or setup reactionary
+// functions for the DOM elements.
+//---------------------------------------------------------------------
 
-	init: function() {
-		const { glob, document } = this;
+init: function() {
+	const {glob, document} = this;
 
-		glob.roleChange(document.getElementById("storage"), "varNameContainer");
-	},
+	glob.roleChange(document.getElementById('storage'), 'varNameContainer')
+},
 
-	//---------------------------------------------------------------------
-	// Action Bot Function
-	//
-	// This is the function for the action within the Bot's Action class.
-	// Keep in mind event calls won't have access to the "msg" parameter,
-	// so be sure to provide checks for variable existance.
-	//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+// Action Bot Function
+//
+// This is the function for the action within the Bot's Action class.
+// Keep in mind event calls won't have access to the "msg" parameter, 
+// so be sure to provide checks for variable existance.
+//---------------------------------------------------------------------
 
-	action: function(cache) {
-		const data = cache.actions[cache.index];
-		const reason = this.evalMessage(data.reason, cache);
-		const roleData = {};
-		if(data.roleName) {
-			roleData.name = this.evalMessage(data.roleName, cache);
-		}
-		if(data.color) {
-			roleData.color = this.evalMessage(data.color, cache);
-		}
-		if(data.position) {
-			roleData.position = parseInt(this.evalMessage(data.position, cache));
-		}
-		if(data.hoist !== "none") {
-			roleData.hoist = JSON.parse(data.hoist);
-		}
-		if(data.mentionable !== "none") {
-			roleData.mentionable = JSON.parse(data.mentionable);
-		}
-		const storage = parseInt(data.storage);
-		const varName = this.evalMessage(data.varName, cache);
-		const role = this.getRole(storage, varName, cache);
-		if(Array.isArray(role)) {
-			this.callListFunc(role, "edit", [roleData, reason]).then(() => this.callNextAction(cache));
-		} else if(role && role.edit) {
-			role.edit(roleData, reason)
-				.then(() => this.callNextAction(cache))
-				.catch(this.displayError.bind(this, data, cache));
-		} else {
+action: function(cache) {
+	const data = cache.actions[cache.index];
+	const server = cache.server;
+	const roleData = {};
+	if(data.roleName) {
+		roleData.name = this.evalMessage(data.roleName, cache);
+	}
+	if(data.color) {
+		roleData.color = this.evalMessage(data.color, cache);
+	}
+	if(data.position) {
+		roleData.position = parseInt(data.position);
+	}
+	if(data.hoist !== 'none') {
+		roleData.hoist = JSON.parse(data.hoist);
+	}
+	if(data.mentionable !== 'none') {
+		roleData.mentionable = JSON.parse(data.mentionable);
+	}
+	const storage = parseInt(data.storage);
+	const varName = this.evalMessage(data.varName, cache);
+	const role = this.getRole(storage, varName, cache);
+	if(Array.isArray(role)) {
+		this.callListFunc(role, 'edit', [roleData]).then(function() {
 			this.callNextAction(cache);
-		}
-	},
+		}.bind(this));
+	} else if(role && role.edit) {
+		role.edit(roleData).then(function(role) {
+			this.callNextAction(cache);
+		}.bind(this)).catch(this.displayError.bind(this, data, cache));
+	} else {
+		this.callNextAction(cache);
+	}
+},
 
-	//---------------------------------------------------------------------
-	// Action Bot Mod
-	//
-	// Upon initialization of the bot, this code is run. Using the bot's
-	// DBM namespace, one can add/modify existing functions if necessary.
-	// In order to reduce conflictions between mods, be sure to alias
-	// functions you wish to overwrite.
-	//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+// Action Bot Mod
+//
+// Upon initialization of the bot, this code is run. Using the bot's
+// DBM namespace, one can add/modify existing functions if necessary.
+// In order to reduce conflictions between mods, be sure to alias
+// functions you wish to overwrite.
+//---------------------------------------------------------------------
 
-	mod: function() {}
+mod: function(DBM) {
+}
+
 }; // End of module
